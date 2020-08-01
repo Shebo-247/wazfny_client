@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wazfny_client/custom_widgets/user_info.dart';
 import 'package:wazfny_client/models/freelancer.dart';
 import 'package:wazfny_client/models/job_model.dart';
@@ -32,6 +34,7 @@ class _JobReviewPageState extends State<JobReviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loggedUser = Provider.of<FirebaseUser>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Job Review'),
@@ -178,20 +181,61 @@ class _JobReviewPageState extends State<JobReviewPage> {
                               Expanded(
                                 child: FlatButton(
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 10),
-                                  onPressed: () {},
-                                  color: appTheme.primaryColor,
-                                  child: Text('Message'),
+                                    horizontal: 15,
+                                    vertical: 10,
+                                  ),
+                                  onPressed: () {
+                                    DateTime currentTime = DateTime.now();
+                                    Timestamp time =
+                                        Timestamp.fromDate(currentTime);
+                                    setState(() {
+                                      Firestore.instance
+                                          .collection("Messages")
+                                          .document(loggedUser.uid)
+                                          .collection(
+                                              proposals[index]['freelancerId'])
+                                          .add({
+                                        'message': widget.job.title,
+                                        'time': time,
+                                      });
+                                      Firestore.instance
+                                          .collection("Messages")
+                                          .document(
+                                              proposals[index]['freelancerId'])
+                                          .collection(loggedUser.uid)
+                                          .add({
+                                        'message': widget.job.title,
+                                        'time': time,
+                                      });
+                                      proposals.removeAt(index);
+                                      Firestore.instance
+                                          .collection("Jobs")
+                                          .document(widget.job.id)
+                                          .updateData({'proposals': proposals});
+                                    });
+                                  },
+                                  color: Colors.greenAccent,
+                                  child: Text('Accept'),
                                 ),
                               ),
                               SizedBox(width: 5),
                               Expanded(
                                 child: FlatButton(
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 10),
-                                  onPressed: () {},
-                                  color: appTheme.primaryColor,
-                                  child: Text('Hire'),
+                                    horizontal: 15,
+                                    vertical: 10,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      proposals.removeAt(index);
+                                      Firestore.instance
+                                          .collection("Jobs")
+                                          .document(widget.job.id)
+                                          .updateData({'proposals': proposals});
+                                    });
+                                  },
+                                  color: Colors.redAccent,
+                                  child: Text('Decline'),
                                 ),
                               ),
                             ],

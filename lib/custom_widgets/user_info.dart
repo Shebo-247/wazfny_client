@@ -6,7 +6,7 @@ import 'package:wazfny_client/utils/constants.dart';
 Widget userInfo(freelancerID) {
   return StreamBuilder(
     stream: Firestore.instance
-        .collection("Users")
+        .collection("Freelancers")
         .document(freelancerID)
         .snapshots(),
     builder: (context, snapshot) {
@@ -64,7 +64,6 @@ Widget userInfo(freelancerID) {
               ),
             ],
           ),
-          //savedJobIcon(jobID, loggedUserID),
         ],
       );
     },
